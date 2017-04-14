@@ -1,8 +1,6 @@
 package util;
 
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -12,7 +10,12 @@ public class Shifter
 {
     private static final String TIME_PATTERN = "[0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}"; // 00:09:43,024
 
-    public static String shift(String data, int sn) throws Exception
+    public static String shift(String data, TimeUnit timeUnit, int s) throws Exception
+    {
+        return shift(data, timeUnit.toMillis(s));
+    }
+
+    public static String shift(String data, long millis) throws Exception
     {
         System.out.println("started");
         Matcher m = Pattern.compile(TIME_PATTERN).matcher(data);
@@ -21,12 +24,10 @@ public class Shifter
         while (m.find())
         {
             Time time = new Time(m.group());
-            time.add(TimeUnit.SECONDS, sn);
+            time.add(TimeUnit.MILLISECONDS, (int) millis);
             m.appendReplacement(sb, time.toString());
         }
         m.appendTail(sb);
-
-        Files.write(Paths.get("/Users/ferdielik/projects/java/subtitle-shifter/src/main/resources/new.srt"), sb.toString().getBytes());
 
         return sb.toString();
     }
