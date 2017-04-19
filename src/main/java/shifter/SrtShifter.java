@@ -17,7 +17,6 @@ public class SrtShifter implements Shifter
 
     private String shift(String data, long millis) throws Exception
     {
-        System.out.println("started");
         Matcher m = Pattern.compile(TIME_PATTERN).matcher(data);
         StringBuffer sb = new StringBuffer();
 
