@@ -1,4 +1,4 @@
-package util;
+package shifter;
 
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -6,16 +6,16 @@ import java.util.regex.Pattern;
 
 import entity.Time;
 
-public class Shifter
+public class SrtShifter implements Shifter
 {
     private static final String TIME_PATTERN = "[0-9]{2}:[0-9]{2}:[0-9]{2},[0-9]{3}"; // 00:09:43,024
 
-    public static String shift(String data, TimeUnit timeUnit, int s) throws Exception
+    public String shift(String data, TimeUnit timeUnit, int s) throws Exception
     {
         return shift(data, timeUnit.toMillis(s));
     }
 
-    public static String shift(String data, long millis) throws Exception
+    private String shift(String data, long millis) throws Exception
     {
         System.out.println("started");
         Matcher m = Pattern.compile(TIME_PATTERN).matcher(data);

@@ -4,17 +4,19 @@ import java.util.concurrent.TimeUnit;
 
 public enum ShiftOption
 {
-    MILLISECONDS("Millieconds", "Millieconds", TimeUnit.MILLISECONDS),
-    SECONDS("Seconds", "Seconds", TimeUnit.SECONDS),
-    MINUTES("Minutes", "Minutes", TimeUnit.MINUTES),
-    HOURS("Hours", "Hours", TimeUnit.HOURS),;
+    MILLISECONDS(TimeUnit.MILLISECONDS, "l", "Milliseconds", "Milliseconds"),
+    SECONDS(TimeUnit.SECONDS, "s", "Seconds", "Seconds"),
+    MINUTES(TimeUnit.MINUTES, "m", "Minutes", "Minutes"),
+    HOURS(TimeUnit.HOURS, "h", "Hours", "Hours");
 
+    String opt;
     String name;
     String description;
     TimeUnit unit;
 
-    ShiftOption(String name, String description, TimeUnit unit)
+    ShiftOption(TimeUnit unit, String opt, String description, String name)
     {
+        this.opt = opt;
         this.name = name;
         this.description = description;
         this.unit = unit;
@@ -35,4 +37,8 @@ public enum ShiftOption
         return unit;
     }
 
+    public String getOpt()
+    {
+        return opt;
+    }
 }

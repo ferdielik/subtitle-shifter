@@ -1,6 +1,7 @@
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -11,14 +12,18 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import entity.ShiftOption;
+import entity.Time;
+import shifter.Shifter;
+import shifter.SrtShifter;
 import util.FileUtil;
-import util.Shifter;
 
 public class Initializer
 {
     private static final String ENCODING = "iso-8859-1";
     private static final String FILE_ARG = "files";
     private static final String NEW_NAME = "new-name";
+
+    private Shifter srtShifter = new SrtShifter();
 
     public static void main(String[] args) throws Exception
     {
@@ -36,7 +41,7 @@ public class Initializer
             String value = commandLine.getOptionValue(option.getName());
             if (value != null && !value.equals(""))
             {
-                shiftedData = Shifter.shift(shiftedData, option.getUnit(), Integer.valueOf(value));
+                shiftedData = srtShifter.shift(shiftedData, option.getUnit(), Integer.valueOf(value));
                 System.out.println(value + " " + option.getName() + "  shifted");
             }
         }
@@ -46,6 +51,7 @@ public class Initializer
         Files.write(Paths.get(newFilePath), shiftedData.getBytes(ENCODING));
     }
 
+
     private CommandLine parse(String[] args)
     {
         CommandLineParser parser = new DefaultParser();
@@ -53,12 +59,12 @@ public class Initializer
         Options options = new Options();
         CommandLine cmd = null;
 
-        options.addOption(new Option("l", ShiftOption.MILLISECONDS.getName(), true, "millisecond"));
-        options.addOption(new Option("s", ShiftOption.SECONDS.getName(), true, "second"));
-        options.addOption(new Option("m", ShiftOption.MINUTES.getName(), true, "minute"));
-        options.addOption(new Option("h", ShiftOption.HOURS.getName(), true, "hour"));
-        options.addOption(new Option("", NEW_NAME, true, "new name"));
+        for (ShiftOption sOption : ShiftOption.values())
+        {
+            options.addOption(new Option(sOption.getOpt(), sOption.getDescription(), true, sOption.getDescription()));
+        }
 
+        options.addOption(new Option("", NEW_NAME, true, "new name"));
         Option file = new Option("", FILE_ARG, true, "new name");
         file.setRequired(true);
         options.addOption(file);
