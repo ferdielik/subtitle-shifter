@@ -11,6 +11,10 @@ Only srt format for now.
 java -r sshifter.jar --files orj.srt -l10 -s20 -m1
 # subtitle 1 minutes, 20 seconds and 10 milliseconds shifted
 </pre>
+<pre>
+java -r sshifter.jar --files orj.srt -l-35
+# subtitle -35 milliseconds shifted
+</pre>
 
 Commands
 <pre>
