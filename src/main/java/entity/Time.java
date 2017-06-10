@@ -1,36 +1,51 @@
 package entity;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
-public class Time // HH:mm:ss,SSS
+public class Time
 {
-    private long millis = 0;
+    private Calendar calendar = Calendar.getInstance();
+    private SimpleDateFormat dateFormat;
 
-    public Time(String time)
+    public Time(String time, String format)
     {
-        String[] parts = time.split(":");
-
-        millis += TimeUnit.HOURS.toMillis(Integer.parseInt(parts[0]));
-        millis += TimeUnit.MINUTES.toMillis(Integer.parseInt(parts[1]));
-
-        String[] parts2 = parts[2].split(",");
-        millis += TimeUnit.SECONDS.toMillis(Integer.parseInt(parts2[0]));
-        millis += Integer.parseInt(parts2[1]);
+        this.dateFormat = new SimpleDateFormat(format);
+        try
+        {
+            calendar.setTime(dateFormat.parse(time));
+        }
+        catch (ParseException e)
+        {
+            e.printStackTrace();
+        }
     }
 
-    @Override
-    public String toString()
+    public boolean isAfter(Time time)
     {
-        return String.format("%02d:%02d:%02d,%03d",
-                TimeUnit.MILLISECONDS.toHours(millis),
-                TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
-                TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)),
-                millis - TimeUnit.SECONDS.toMillis(TimeUnit.MILLISECONDS.toSeconds(millis))
-        );
+        return toMillis() > time.toMillis();
     }
 
-    public void add(TimeUnit timeUnit, int i)
+    public String format()
     {
-        millis += timeUnit.toMillis(i);
+        return dateFormat.format(calendar.getTime());
+    }
+
+    public void add(int field, int amount)
+    {
+        calendar.add(field, amount);
+    }
+
+    public long toMillis()
+    {
+        long millis = TimeUnit.HOURS.toMillis(calendar.get(Calendar.HOUR_OF_DAY));
+
+        millis += TimeUnit.MINUTES.toMillis(calendar.get(Calendar.MINUTE));
+        millis += TimeUnit.SECONDS.toMillis(calendar.get(Calendar.SECOND));
+        millis += calendar.get(Calendar.MILLISECOND);
+
+        return millis;
     }
 }

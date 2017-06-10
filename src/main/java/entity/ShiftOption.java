@@ -1,20 +1,21 @@
 package entity;
 
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 public enum ShiftOption
 {
-    MILLISECONDS(TimeUnit.MILLISECONDS, "l", "Milliseconds", "Milliseconds"),
-    SECONDS(TimeUnit.SECONDS, "s", "Seconds", "Seconds"),
-    MINUTES(TimeUnit.MINUTES, "m", "Minutes", "Minutes"),
-    HOURS(TimeUnit.HOURS, "h", "Hours", "Hours");
+    MILLISECONDS(Calendar.MILLISECOND, "l", "Milliseconds", "Milliseconds"),
+    SECONDS(Calendar.SECOND, "s", "Seconds", "Seconds"),
+    MINUTES(Calendar.MINUTE, "m", "Minutes", "Minutes"),
+    HOURS(Calendar.HOUR_OF_DAY, "h", "Hours", "Hours");
 
     String opt;
     String name;
     String description;
-    TimeUnit unit;
+    int unit;
 
-    ShiftOption(TimeUnit unit, String opt, String description, String name)
+    ShiftOption(int unit, String opt, String description, String name)
     {
         this.opt = opt;
         this.name = name;
@@ -32,7 +33,7 @@ public enum ShiftOption
         return description;
     }
 
-    public TimeUnit getUnit()
+    public int getUnit()
     {
         return unit;
     }

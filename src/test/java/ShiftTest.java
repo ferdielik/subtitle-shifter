@@ -1,22 +1,13 @@
-import java.util.concurrent.TimeUnit;
+import java.util.Calendar;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import shifter.Shifter;
-import shifter.SrtShifter;
+import entity.SubtitleType;
 import util.FileUtil;
 
 public class ShiftTest
 {
-    Shifter shifter;
-
-    @Before
-    public void init()
-    {
-        shifter = new SrtShifter();
-    }
 
     @Test
     public void shiftTest() throws Exception
@@ -27,9 +18,27 @@ public class ShiftTest
         String shiftedFile = FileUtil.getResourcePath("original17plus.srt");
         String shiftedContent = FileUtil.readFileContent(shiftedFile, "iso-8859-1");
 
-        originalContent = shifter.shift(originalContent, TimeUnit.SECONDS, 17);
+        SubtitleType subtitleType = SubtitleType.findByExtension(FileUtil.getFileExtension(originalFile));
+        originalContent = subtitleType.getShifter().shift(originalContent, Calendar.SECOND, 17, null);
 
         Assert.assertTrue("must be equals", originalContent.equals(shiftedContent));
 
     }
+
+    @Test
+    public void shiftAssTest() throws Exception
+    {
+        String originalFile = FileUtil.getResourcePath("original.ass");
+        String originalContent = FileUtil.readFileContent(originalFile, "UTF-8");
+
+        String shiftedFile = FileUtil.getResourcePath("original-21-plus.ass");
+        String shiftedContent = FileUtil.readFileContent(shiftedFile, "UTF-8");
+
+        SubtitleType subtitleType = SubtitleType.findByExtension(FileUtil.getFileExtension(originalFile));
+        originalContent = subtitleType.getShifter().shift(originalContent, Calendar.SECOND,     21, null);
+
+        Assert.assertTrue("must be equals", originalContent.equals(shiftedContent));
+
+    }
+
 }

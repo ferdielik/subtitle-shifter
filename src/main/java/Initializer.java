@@ -1,7 +1,6 @@
-import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -12,18 +11,22 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import entity.ShiftOption;
+import entity.SubtitleType;
 import entity.Time;
 import shifter.Shifter;
-import shifter.SrtShifter;
 import util.FileUtil;
 
 public class Initializer
 {
-    private static final String ENCODING = "iso-8859-1";
-    private static final String FILE_ARG = "files";
-    private static final String NEW_NAME = "new-name";
+    private static final String ARG_FILE = "subtitle-file";
+    private static final String ARG_OVERRIDE = "override";
+    private static final String ARG_AFTER = "after";
+    private static final String ARG_ENCODING = "encoding";
 
-    private Shifter srtShifter = new SrtShifter();
+    private String encoding;
+    private Path subtitleFilePath;
+    private Shifter shifter;
+    private CommandLine commandLine;
 
     public static void main(String[] args) throws Exception
     {
@@ -32,25 +35,58 @@ public class Initializer
 
     private void run(String[] args) throws Exception
     {
-        CommandLine commandLine = parse(args);
-        String filePath = commandLine.getOptionValue(FILE_ARG);
-        String shiftedData = FileUtil.readFileContent(filePath, ENCODING);
+        initialize(args);
+        String subtitleData = processSubtitle();
+        Files.write(Paths.get(getFilePath()), subtitleData.getBytes(encoding));
+        System.out.println(getFilePath());
+    }
+
+    private void initialize(String[] args)
+    {
+        commandLine = parse(args);
+        subtitleFilePath = Paths.get(commandLine.getOptionValue(ARG_FILE));
+        encoding = commandLine.getOptionValue(ARG_ENCODING) == null ? "utf-8" : commandLine.getOptionValue(ARG_ENCODING);
+
+        String ext = FileUtil.getFileExtension(subtitleFilePath.toString());
+        SubtitleType subType = SubtitleType.findByExtension(ext);
+        shifter = subType.getShifter();
+    }
+
+    private String processSubtitle() throws Exception
+    {
+        String subtitleData = FileUtil.readFileContent(subtitleFilePath.toString(), encoding);
 
         for (ShiftOption option : ShiftOption.values())
         {
             String value = commandLine.getOptionValue(option.getName());
             if (value != null && !value.equals(""))
             {
-                shiftedData = srtShifter.shift(shiftedData, option.getUnit(), Integer.valueOf(value));
+                subtitleData = shifter.shift(subtitleData, option.getUnit(), Integer.valueOf(value), time ->
+                {
+                    String afterTimeArg = commandLine.getOptionValue(ARG_AFTER);
+                    if (afterTimeArg == null)
+                        return true;
+
+                    Time from = new Time(afterTimeArg, "HH:mm:ss");
+                    return time.isAfter(from);
+
+                });
                 System.out.println(value + " " + option.getName() + "  shifted");
             }
         }
 
-        String newFileName = commandLine.getOptionValue(NEW_NAME) == null ? new File(filePath).getName() : commandLine.getOptionValue(NEW_NAME) + ".srt";
-        String newFilePath = System.getProperty("user.dir") + "/" + newFileName;
-        Files.write(Paths.get(newFilePath), shiftedData.getBytes(ENCODING));
+        return subtitleData;
     }
 
+    private String getFilePath()
+    {
+        boolean override = commandLine.hasOption(ARG_OVERRIDE);
+        if (override)
+        {
+            return subtitleFilePath.toString();
+        }
+        return subtitleFilePath.getParent().toString() + "/resync-" + subtitleFilePath.getFileName();
+    }
 
     private CommandLine parse(String[] args)
     {
@@ -64,8 +100,11 @@ public class Initializer
             options.addOption(new Option(sOption.getOpt(), sOption.getDescription(), true, sOption.getDescription()));
         }
 
-        options.addOption(new Option("", NEW_NAME, true, "new name"));
-        Option file = new Option("", FILE_ARG, true, "new name");
+        options.addOption(new Option("o", ARG_OVERRIDE, false, "Override subtitle"));
+        options.addOption(new Option("e", ARG_ENCODING, true, "Subtitle encoding"));
+        options.addOption(new Option("a", ARG_AFTER, true, "After time"));
+
+        Option file = new Option("f", ARG_FILE, true, "Subtitle file");
         file.setRequired(true);
         options.addOption(file);
 

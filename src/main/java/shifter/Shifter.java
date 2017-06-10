@@ -1,10 +1,8 @@
 package shifter;
 
-import java.util.concurrent.TimeUnit;
-
 public interface Shifter
 {
-    public String shift(String data, TimeUnit timeUnit, int s) throws Exception;
+    String shift(String data, int field, int amount, TimeCheck timeCheck) throws Exception;
 }
 
 
